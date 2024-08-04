@@ -2,6 +2,7 @@ package org.localtors;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -45,17 +46,22 @@ public class BingReward {
       }
 
       // Mở tab mới và điều hướng đến bing.com
-      ((JavascriptExecutor) webDriver).executeScript("window.open('about:blank', '_blank');");
-      ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
-      webDriver.switchTo().window(tabs.get(1));
-      webDriver.get("https://www.bing.com");
+      IntStream.range(1,3)
+          .forEach(value -> {
+            ((JavascriptExecutor) webDriver).executeScript("window.open('about:blank', '_blank');");
+            ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
+            webDriver.switchTo().window(tabs.get(value));
+            webDriver.get("https://www.bing.com");
 
+            webDriver.findElement(By.id("sb_form_q")).sendKeys("hello from selenium");
+            webDriver.findElement(By.id("sb_form_q")).sendKeys(Keys.ENTER);
+          });
 
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
     } finally {
       // Đóng trình duyệt
-      webDriver.quit();
+//      webDriver.quit();
     }
   }
 
