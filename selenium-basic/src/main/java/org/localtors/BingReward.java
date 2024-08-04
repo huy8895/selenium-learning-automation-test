@@ -5,7 +5,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.localtors.GoogleTrends.GEO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -87,6 +87,15 @@ public class BingReward {
     ).isPresent();
   }
 
+  public static Integer toNumeric(String str) {
+    if (str == null) return 0;
+    final String[] split = str.split("\n");
+
+    return Optional.of(split[0]).filter(
+        s -> s.matches("\\d+")
+    ).map(Integer::parseInt).get();
+  }
+
   private static void dailyTask(WebDriver webDriver) {
     System.out.println("dailyTask start =====> ");
     webDriver.get("https://rewards.bing.com/");
@@ -94,10 +103,7 @@ public class BingReward {
         .stream()
         .filter(webElement -> isNumeric(webElement.getText()))
         .forEach(webElement -> {
-      System.out.println("webElement.getText() = " + webElement.getText());
-      final WebElement element = webElement.findElement(By.xpath("(//span[@aria-label='plus'])"));
-      element.click();
-
+      System.out.println("webElement.getText() = " + toNumeric(webElement.getText()) + webElement.getText());
       webElement.click();
     });
   }
