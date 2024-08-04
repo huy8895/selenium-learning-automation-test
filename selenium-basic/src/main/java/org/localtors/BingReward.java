@@ -1,8 +1,12 @@
 package org.localtors;
 
+import com.apptasticsoftware.rssreader.Item;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.localtors.GoogleTrends.GEO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -25,20 +29,36 @@ public class BingReward {
       webDriver.findElement(By.xpath("//input[@id='i0116']"))
           .sendKeys(args[0], Keys.ENTER);
 
-      // Chờ cho trường nhập password xuất hiện
-      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(5));
-      WebElement passwordField = wait.until(
-          ExpectedConditions.visibilityOfElementLocated(By.id("i0118")));
+      // Chờ trường nhập mật khẩu xuất hiện, hoặc xử lý xác nhận mã nếu cần
+      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(20));
 
-      // Nhập password và nhấn Enter
-      passwordField.sendKeys(args[1], Keys.ENTER);
+      // Kiểm tra xem có phải là màn hình xác nhận mã không
+      boolean isAuthenticatorScreen = false;
+      try {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Check your Authenticator app']")));
+        isAuthenticatorScreen = true; // Đây là giả định, thay đổi idOfAuthenticatorField với id thật
+      } catch (Exception e) {
+        // Màn hình xác nhận mã không xuất hiện, có thể là lỗi khác
+        System.out.println(
+            "Exception Màn hình xác nhận mã không xuất hiện, có thể là lỗi khác = " + e);
+      }
+
+      if (isAuthenticatorScreen == false) {
+        // Chờ cho trường nhập password xuất hiện
+        WebElement passwordField = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.id("i0118")));
+
+        // Nhập password và nhấn Enter
+        passwordField.sendKeys(args[1], Keys.ENTER);
+      }
 
       // Chờ cho trang "Stay signed in?" xuất hiện bằng cách tìm văn bản
       WebElement staySignedInTitle = wait.until(
           ExpectedConditions.visibilityOfElementLocated(
               By.xpath("//div[text()='Stay signed in?']")));
 
-// Kiểm tra nếu có chữ "Stay signed in?" và chọn "Yes"
+      // Kiểm tra nếu có chữ "Stay signed in?" và chọn "Yes"
       if (staySignedInTitle != null) {
         WebElement yesButton = wait.until(ExpectedConditions.elementToBeClickable(
             By.xpath("//button[@type='submit' and text()='Yes']")));
@@ -46,22 +66,48 @@ public class BingReward {
       }
 
       // Mở tab mới và điều hướng đến bing.com
-      IntStream.range(1,3)
-          .forEach(value -> {
+
+      final AtomicInteger tabIndex = new AtomicInteger(1);
+      GoogleTrends.get(GEO.JP)
+          .stream()
+          .map(Item::getTitle)
+          .filter(Optional::isPresent)
+          .forEach(item -> {
             ((JavascriptExecutor) webDriver).executeScript("window.open('about:blank', '_blank');");
             ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
-            webDriver.switchTo().window(tabs.get(value));
+            webDriver.switchTo()
+                .window(tabs.get(1));
             webDriver.get("https://www.bing.com");
 
-            webDriver.findElement(By.id("sb_form_q")).sendKeys("hello from selenium");
-            webDriver.findElement(By.id("sb_form_q")).sendKeys(Keys.ENTER);
+            webDriver.findElement(By.id("sb_form_q"))
+                .sendKeys(item.get(), Keys.ENTER);
+//             Chờ 5 giây sử dụng WebDriverWait
+            new WebDriverWait(webDriver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
+            try {
+              TimeUnit.SECONDS.sleep(7);
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            } finally {
+              // Đóng tab mới
+              webDriver.close();
+
+              // Chuyển lại tab gốc
+              webDriver.switchTo()
+                  .window(tabs.get(0));
+            }
+
+
           });
 
+      TimeUnit.SECONDS.sleep(30);
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     } finally {
       // Đóng trình duyệt
-//      webDriver.quit();
+      webDriver.quit();
     }
   }
 
