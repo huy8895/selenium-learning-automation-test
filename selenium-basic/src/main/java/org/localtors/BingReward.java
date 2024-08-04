@@ -65,41 +65,8 @@ public class BingReward {
         yesButton.click();
       }
 
-      // Mở tab mới và điều hướng đến bing.com
-
-      final AtomicInteger tabIndex = new AtomicInteger(1);
-      GoogleTrends.get(GEO.JP)
-          .stream()
-          .map(Item::getTitle)
-          .filter(Optional::isPresent)
-          .forEach(item -> {
-            ((JavascriptExecutor) webDriver).executeScript("window.open('about:blank', '_blank');");
-            ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
-            webDriver.switchTo()
-                .window(tabs.get(1));
-            webDriver.get("https://www.bing.com");
-
-            webDriver.findElement(By.id("sb_form_q"))
-                .sendKeys(item.get(), Keys.ENTER);
-//             Chờ 5 giây sử dụng WebDriverWait
-            new WebDriverWait(webDriver, Duration.ofSeconds(5))
-                .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
-            try {
-              TimeUnit.SECONDS.sleep(7);
-            } catch (InterruptedException e) {
-              throw new RuntimeException(e);
-            } finally {
-              // Đóng tab mới
-              webDriver.close();
-
-              // Chuyển lại tab gốc
-              webDriver.switchTo()
-                  .window(tabs.get(0));
-            }
-
-
-          });
-
+      dailyTask(webDriver);
+//      searchBing(webDriver);
       TimeUnit.SECONDS.sleep(30);
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
@@ -109,6 +76,66 @@ public class BingReward {
       // Đóng trình duyệt
       webDriver.quit();
     }
+  }
+
+  public static boolean isNumeric(String str) {
+    if (str == null) return false;
+    final String[] split = str.split("\n");
+
+    return Optional.of(split[0]).filter(
+        s -> s.matches("\\d+")
+    ).isPresent();
+  }
+
+  private static void dailyTask(WebDriver webDriver) {
+    System.out.println("dailyTask start =====> ");
+    webDriver.get("https://rewards.bing.com/");
+    webDriver.findElements(By.xpath("//div[@class='c-card-content']"))
+        .stream()
+        .filter(webElement -> isNumeric(webElement.getText()))
+        .forEach(webElement -> {
+      System.out.println("webElement.getText() = " + webElement.getText());
+      final WebElement element = webElement.findElement(By.xpath("(//span[@aria-label='plus'])"));
+      element.click();
+
+      webElement.click();
+    });
+  }
+
+  private static void searchBing(WebDriver webDriver) {
+    System.out.println("searchBing ========> ");
+    // Mở tab mới và điều hướng đến bing.com
+    GoogleTrends.get(GEO.JP)
+        .stream()
+        .map(Item::getTitle)
+        .filter(Optional::isPresent)
+        .forEach(item -> {
+          ((JavascriptExecutor) webDriver).executeScript("window.open('about:blank', '_blank');");
+          ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
+          webDriver.switchTo()
+              .window(tabs.get(1));
+          webDriver.get("https://www.bing.com");
+
+          webDriver.findElement(By.id("sb_form_q"))
+              .sendKeys(item.get(), Keys.ENTER);
+//             Chờ 5 giây sử dụng WebDriverWait
+          new WebDriverWait(webDriver, Duration.ofSeconds(5))
+              .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
+          try {
+            TimeUnit.SECONDS.sleep(7);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          } finally {
+            // Đóng tab mới
+            webDriver.close();
+
+            // Chuyển lại tab gốc
+            webDriver.switchTo()
+                .window(tabs.get(0));
+          }
+
+
+        });
   }
 
 
