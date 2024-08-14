@@ -66,7 +66,7 @@ public class BingReward {
       }
 
       dailyTask(webDriver);
-//      searchBing(webDriver);
+      searchBing(webDriver);
       TimeUnit.SECONDS.sleep(30);
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
@@ -97,7 +97,7 @@ public class BingReward {
   }
 
   private static void dailyTask(WebDriver webDriver) {
-    System.out.println("dailyTask start =====> ");
+    System.out.println("<===== dailyTask start =====> ");
     webDriver.get("https://rewards.bing.com/");
     webDriver.findElements(By.xpath("//div[@class='c-card-content']"))
         .stream()
@@ -106,12 +106,13 @@ public class BingReward {
       System.out.println("webElement.getText() = " + toNumeric(webElement.getText()) + webElement.getText());
       webElement.click();
     });
+    System.out.println("<===== dailyTask end =====> ");
   }
 
   private static void searchBing(WebDriver webDriver) {
-    System.out.println("searchBing ========> ");
+    System.out.println("<===== searchBing ========> ");
     // Mở tab mới và điều hướng đến bing.com
-    GoogleTrends.get(GEO.JP)
+    GoogleTrends.get(GEO.VN)
         .stream()
         .map(Item::getTitle)
         .filter(Optional::isPresent)
@@ -139,9 +140,8 @@ public class BingReward {
             webDriver.switchTo()
                 .window(tabs.get(0));
           }
-
-
         });
+    System.out.println("<===== searchBing end =====> ");
   }
 
 
