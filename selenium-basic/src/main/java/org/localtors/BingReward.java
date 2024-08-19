@@ -3,9 +3,9 @@ package org.localtors;
 import com.apptasticsoftware.rssreader.Item;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.localtors.GoogleTrends.GEO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -65,7 +65,11 @@ public class BingReward {
         yesButton.click();
       }
 
-      dailyTask(webDriver);
+      try{
+//        dailyTask(webDriver);
+      } catch (Exception e){
+        System.out.println("error in dailyTask = " + e);
+      }
       searchBing(webDriver);
       TimeUnit.SECONDS.sleep(30);
 
@@ -99,12 +103,30 @@ public class BingReward {
   private static void dailyTask(WebDriver webDriver) {
     System.out.println("<===== dailyTask start =====> ");
     webDriver.get("https://rewards.bing.com/");
-    webDriver.findElements(By.xpath("//div[@class='c-card-content']"))
+//    ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
+    String tab0 = webDriver.getWindowHandle();
+    System.out.println("tab0 = " + tab0);
+//    WebDriver.
+
+    final List<WebElement> elements = webDriver.findElements(
+        By.xpath("//div[@class='c-card-content']"));
+    System.out.println("elements = " + elements);
+
+    elements
         .stream()
+        .filter(WebElement::isDisplayed)
         .filter(webElement -> isNumeric(webElement.getText()))
+        .filter(webElement -> 15 > toNumeric(webElement.getText()))
         .forEach(webElement -> {
       System.out.println("webElement.getText() = " + toNumeric(webElement.getText()) + webElement.getText());
       webElement.click();
+          ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
+          if (tabs.size() > 1){sleep(0,
+              () -> {
+            System.out.println("dailyTask after sleep = " + tabs);
+            webDriver.switchTo().window(tab0);
+              });
+          }
     });
     System.out.println("<===== dailyTask end =====> ");
   }
@@ -112,7 +134,7 @@ public class BingReward {
   private static void searchBing(WebDriver webDriver) {
     System.out.println("<===== searchBing ========> ");
     // Mở tab mới và điều hướng đến bing.com
-    GoogleTrends.get(GEO.VN)
+    GoogleTrends.getAll(GEO.values())
         .stream()
         .map(Item::getTitle)
         .filter(Optional::isPresent)
@@ -128,20 +150,31 @@ public class BingReward {
 //             Chờ 5 giây sử dụng WebDriverWait
           new WebDriverWait(webDriver, Duration.ofSeconds(5))
               .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
-          try {
-            TimeUnit.SECONDS.sleep(7);
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          } finally {
-            // Đóng tab mới
-            webDriver.close();
 
-            // Chuyển lại tab gốc
-            webDriver.switchTo()
-                .window(tabs.get(0));
-          }
+          sleep(7, () -> closeTabAndGoBack(webDriver, tabs));
         });
     System.out.println("<===== searchBing end =====> ");
+  }
+
+  private static void closeTabAndGoBack(WebDriver webDriver, ArrayList<String> tabs) {
+    if (tabs.size() <= 1){
+      return;
+    }
+    webDriver.close();
+
+    // Chuyển lại tab gốc
+    webDriver.switchTo()
+        .window(tabs.get(0));
+  }
+
+  static void sleep(int seconds, Runnable finallyRun){
+    try {
+      TimeUnit.SECONDS.sleep(seconds);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      finallyRun.run();
+    }
   }
 
 

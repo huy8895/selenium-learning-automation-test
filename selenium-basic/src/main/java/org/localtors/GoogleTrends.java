@@ -3,6 +3,8 @@ package org.localtors;
 import com.apptasticsoftware.rssreader.Item;
 import com.apptasticsoftware.rssreader.RssReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,5 +25,12 @@ public class GoogleTrends {
     }
 
     return items;
+  }
+
+  public static List<Item> getAll(GEO ...geos) {
+    return Arrays.stream(geos)
+        .map(GoogleTrends::get)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
   }
 }
