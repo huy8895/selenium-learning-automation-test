@@ -26,11 +26,11 @@ public class BingReward {
         .implicitlyWait(Duration.ofSeconds(5));
     try {
 
-      webDriver.findElement(By.xpath("//input[@id='i0116']"))
+      webDriver.findElement(By.xpath("//input[@placeholder='Email, phone, or Skype']"))
           .sendKeys(args[0], Keys.ENTER);
 
       // Chờ trường nhập mật khẩu xuất hiện, hoặc xử lý xác nhận mã nếu cần
-      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(20));
+      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
 
       // Kiểm tra xem có phải là màn hình xác nhận mã không
       boolean isAuthenticatorScreen = false;
@@ -47,7 +47,7 @@ public class BingReward {
       if (isAuthenticatorScreen == false) {
         // Chờ cho trường nhập password xuất hiện
         WebElement passwordField = wait.until(
-            ExpectedConditions.visibilityOfElementLocated(By.id("i0118")));
+            ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@placeholder='Password']")));
 
         // Nhập password và nhấn Enter
         passwordField.sendKeys(args[1], Keys.ENTER);
@@ -70,7 +70,7 @@ public class BingReward {
       } catch (Exception e){
         System.out.println("error in dailyTask = " + e);
       }
-      searchBing(webDriver);
+//      searchBing(webDriver);
       TimeUnit.SECONDS.sleep(30);
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
