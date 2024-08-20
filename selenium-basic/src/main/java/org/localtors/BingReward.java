@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.LongStream;
 import org.localtors.GoogleTrends.GEO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -30,7 +32,7 @@ public class BingReward {
           .sendKeys(args[0], Keys.ENTER);
 
       // Chờ trường nhập mật khẩu xuất hiện, hoặc xử lý xác nhận mã nếu cần
-      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
+      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
 
       // Kiểm tra xem có phải là màn hình xác nhận mã không
       boolean isAuthenticatorScreen = false;
@@ -70,7 +72,7 @@ public class BingReward {
       } catch (Exception e){
         System.out.println("error in dailyTask = " + e);
       }
-//      searchBing(webDriver);
+      searchBing(webDriver, 120);
       TimeUnit.SECONDS.sleep(30);
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
@@ -131,11 +133,13 @@ public class BingReward {
     System.out.println("<===== dailyTask end =====> ");
   }
 
-  private static void searchBing(WebDriver webDriver) {
+  private static void searchBing(WebDriver webDriver, int points) {
     System.out.println("<===== searchBing ========> ");
     // Mở tab mới và điều hướng đến bing.com
+    AtomicInteger atomicInteger = new AtomicInteger(0);
     GoogleTrends.getAll(GEO.values())
         .stream()
+        .filter(item -> atomicInteger.getAndIncrement() < points/3)
         .map(Item::getTitle)
         .filter(Optional::isPresent)
         .forEach(item -> {
