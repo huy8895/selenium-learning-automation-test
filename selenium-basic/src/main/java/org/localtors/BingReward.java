@@ -1,5 +1,8 @@
 package org.localtors;
 
+import static org.utils.DataUtils.isNumeric;
+import static org.utils.DataUtils.toNumeric;
+
 import com.apptasticsoftware.rssreader.Item;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -72,7 +75,7 @@ public class BingReward {
       } catch (Exception e){
         System.out.println("error in dailyTask = " + e);
       }
-      searchBing(webDriver, 120);
+      searchBing(webDriver, 90);
       TimeUnit.SECONDS.sleep(30);
 
       // Thêm các bước kiểm tra tiếp theo nếu cần thiết
@@ -84,23 +87,7 @@ public class BingReward {
     }
   }
 
-  public static boolean isNumeric(String str) {
-    if (str == null) return false;
-    final String[] split = str.split("\n");
 
-    return Optional.of(split[0]).filter(
-        s -> s.matches("\\d+")
-    ).isPresent();
-  }
-
-  public static Integer toNumeric(String str) {
-    if (str == null) return 0;
-    final String[] split = str.split("\n");
-
-    return Optional.of(split[0]).filter(
-        s -> s.matches("\\d+")
-    ).map(Integer::parseInt).get();
-  }
 
   private static void dailyTask(WebDriver webDriver) {
     System.out.println("<===== dailyTask start =====> ");
