@@ -20,10 +20,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.utils.Account;
 
 public class BingReward {
 
   public static void main(String[] args) {
+    final Account account = new Account(args);
     WebDriver webDriver = new EdgeDriver();
     webDriver.get("https://login.live.com/");
     webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
@@ -31,26 +33,17 @@ public class BingReward {
 
       webDriver
           .findElement(By.xpath("//input[@placeholder='Email, phone, or Skype']"))
-          .sendKeys(args[0], Keys.ENTER);
+          .sendKeys(account.getUsername(), Keys.ENTER);
 
       // Chờ trường nhập mật khẩu xuất hiện, hoặc xử lý xác nhận mã nếu cần
-      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
+      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(20));
 
       // Kiểm tra xem có phải là màn hình xác nhận mã không
-      boolean isAuthenticatorScreen = false;
-      try {
+      if (account.isNeedAuthenticator()) {
         wait.until(
             ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//div[text()='Check your Authenticator app']")));
-        isAuthenticatorScreen =
-            true; // Đây là giả định, thay đổi idOfAuthenticatorField với id thật
-      } catch (Exception e) {
-        // Màn hình xác nhận mã không xuất hiện, có thể là lỗi khác
-        System.out.println(
-            "Exception Màn hình xác nhận mã không xuất hiện, có thể là lỗi khác = " + e);
-      }
-
-      if (isAuthenticatorScreen == false) {
+      } else {
         // Chờ cho trường nhập password xuất hiện
         WebElement passwordField =
             wait.until(
@@ -58,7 +51,7 @@ public class BingReward {
                     By.xpath("//input[@placeholder='Password']")));
 
         // Nhập password và nhấn Enter
-        passwordField.sendKeys(args[1], Keys.ENTER);
+        passwordField.sendKeys(account.getPassword(), Keys.ENTER);
       }
 
       // Chờ cho trang "Stay signed in?" xuất hiện bằng cách tìm văn bản
