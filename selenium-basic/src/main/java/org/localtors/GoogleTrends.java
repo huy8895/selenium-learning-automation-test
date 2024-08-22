@@ -10,9 +10,6 @@ import java.util.stream.Collectors;
 
 
 public class GoogleTrends {
-  public enum GEO {
-    VN, US, JP
-  }
   public static List<Item> get(GEO geo) {
     RssReader rssReader = new RssReader();
     List<Item> items = null;
@@ -32,5 +29,9 @@ public class GoogleTrends {
         .map(GoogleTrends::get)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
+  }
+
+  public enum GEO {
+    VN, US, JP
   }
 }

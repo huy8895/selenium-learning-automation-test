@@ -9,7 +9,7 @@ import org.openqa.selenium.edge.EdgeDriver;
 public class LocatorEx {
 
   public static void main(String[] args) {
-    WebDriver webDriver= new EdgeDriver();
+    WebDriver webDriver = new EdgeDriver();
     webDriver.get("https://www.bing.com/");
     webDriver.findElement(By.id("sb_form_q")).sendKeys("hello from selenium");
     webDriver.findElement(By.id("sb_form_q")).sendKeys(Keys.ENTER);
@@ -17,5 +17,4 @@ public class LocatorEx {
 
     webDriver.close();
   }
-
 }
