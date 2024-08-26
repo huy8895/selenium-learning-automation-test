@@ -3,14 +3,21 @@ package org.localtors;
 import static org.utils.DataUtils.isNumeric;
 import static org.utils.DataUtils.toNumeric;
 
+import com.apptasticsoftware.rssreader.DateTime;
 import com.apptasticsoftware.rssreader.Item;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import org.localtors.GoogleTrends.GEO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -126,7 +133,9 @@ public class BingReward {
     System.out.println("<===== searchBing ========> ");
     // Mở tab mới và điều hướng đến bing.com
     AtomicInteger atomicInteger = new AtomicInteger(0);
-    GoogleTrends.getAll(GEO.values()).stream()
+    final List<Item> list = GoogleTrends.getAll(GEO.values());
+    Collections.shuffle(list);
+    list.stream()
         .filter(item -> atomicInteger.getAndIncrement() < points / 3)
         .map(Item::getTitle)
         .filter(Optional::isPresent)
@@ -138,7 +147,13 @@ public class BingReward {
               webDriver.switchTo().window(tabs.get(1));
               webDriver.get("https://www.bing.com");
 
-              webDriver.findElement(By.id("sb_form_q")).sendKeys(item.get(), Keys.ENTER);
+              webDriver
+                  .findElement(By.id("sb_form_q"))
+                  .sendKeys(
+                      item.get()
+                          + " "
+                          + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM")),
+                      Keys.ENTER);
               //             Chờ 5 giây sử dụng WebDriverWait
               new WebDriverWait(webDriver, Duration.ofSeconds(5))
                   .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
