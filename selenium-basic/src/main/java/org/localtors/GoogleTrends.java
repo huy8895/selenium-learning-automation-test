@@ -32,6 +32,6 @@ public class GoogleTrends {
   }
 
   public enum GEO {
-    VN, US, JP
+    VN, US, JP, KR, RU, IT, FR, ES, TH, TW
   }
 }

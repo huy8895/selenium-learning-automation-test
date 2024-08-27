@@ -3,7 +3,6 @@ package org.localtors;
 import static org.utils.DataUtils.isNumeric;
 import static org.utils.DataUtils.toNumeric;
 
-import com.apple.eawt.event.GestureListener;
 import com.apptasticsoftware.rssreader.Item;
 import java.time.Duration;
 import java.time.LocalDateTime;
