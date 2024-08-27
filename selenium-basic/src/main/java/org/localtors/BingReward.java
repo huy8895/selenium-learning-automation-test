@@ -3,21 +3,17 @@ package org.localtors;
 import static org.utils.DataUtils.isNumeric;
 import static org.utils.DataUtils.toNumeric;
 
-import com.apptasticsoftware.rssreader.DateTime;
+import com.apple.eawt.event.GestureListener;
 import com.apptasticsoftware.rssreader.Item;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
 import org.localtors.GoogleTrends.GEO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -139,28 +135,32 @@ public class BingReward {
         .filter(item -> atomicInteger.getAndIncrement() < points / 3)
         .map(Item::getTitle)
         .filter(Optional::isPresent)
-        .forEach(
-            item -> {
-              ((JavascriptExecutor) webDriver)
-                  .executeScript("window.open('about:blank', '_blank');");
-              ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
-              webDriver.switchTo().window(tabs.get(1));
-              webDriver.get("https://www.bing.com");
-
-              webDriver
-                  .findElement(By.id("sb_form_q"))
-                  .sendKeys(
-                      item.get()
-                          + " "
-                          + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM")),
-                      Keys.ENTER);
-              //             Chờ 5 giây sử dụng WebDriverWait
-              new WebDriverWait(webDriver, Duration.ofSeconds(5))
-                  .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
-
-              sleep(7, () -> closeTabAndGoBack(webDriver, tabs));
-            });
+        .forEach(item -> search(webDriver, item.get()));
     System.out.println("<===== searchBing end =====> ");
+  }
+
+  private static void search(WebDriver webDriver, String keyWord) {
+    System.out.println("search() called with: [" + keyWord + "]");
+    ((JavascriptExecutor) webDriver)
+        .executeScript("window.open('about:blank', '_blank');");
+    ArrayList<String> tabs = new ArrayList<>(webDriver.getWindowHandles());
+    webDriver.switchTo().window(tabs.get(1));
+    webDriver.get("https://www.bing.com");
+
+    final String today = LocalDateTime.now()
+        .format(DateTimeFormatter.ofPattern("dd/MM"));
+    webDriver
+        .findElement(By.id("sb_form_q"))
+        .sendKeys(
+            keyWord
+                + " "
+                + today,
+            Keys.ENTER);
+    //             Chờ 5 giây sử dụng WebDriverWait
+    new WebDriverWait(webDriver, Duration.ofSeconds(5))
+        .until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
+
+    sleep(7, () -> closeTabAndGoBack(webDriver, tabs));
   }
 
   private static void closeTabAndGoBack(WebDriver webDriver, ArrayList<String> tabs) {
