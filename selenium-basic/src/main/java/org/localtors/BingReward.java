@@ -38,7 +38,7 @@ public class BingReward {
           .sendKeys(account.getUsername(), Keys.ENTER);
 
       // Chờ trường nhập mật khẩu xuất hiện, hoặc xử lý xác nhận mã nếu cần
-      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(20));
+      WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
 
       // Kiểm tra xem có phải là màn hình xác nhận mã không
       if (account.isNeedAuthenticator()) {
@@ -146,14 +146,13 @@ public class BingReward {
     webDriver.switchTo().window(tabs.get(1));
     webDriver.get("https://www.bing.com");
 
+    sleep(1, () -> {});
     final String today = LocalDateTime.now()
         .format(DateTimeFormatter.ofPattern("dd/MM"));
     webDriver
         .findElement(By.id("sb_form_q"))
         .sendKeys(
-            keyWord
-                + " "
-                + today,
+            keyWord,
             Keys.ENTER);
     //             Chờ 5 giây sử dụng WebDriverWait
     new WebDriverWait(webDriver, Duration.ofSeconds(5))
@@ -173,8 +172,10 @@ public class BingReward {
   }
 
   static void sleep(int seconds, Runnable finallyRun) {
+    System.out.println("sleep seconds = " + seconds);
     try {
       TimeUnit.SECONDS.sleep(seconds);
+      System.out.println("sleep done seconds = " + seconds);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } finally {
